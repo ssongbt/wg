@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tjoeun.mapper.WgMapper">
+
+	<insert id="addUser"
+		parameterType="com.tjoeun.vo.WgUserVO">
+		INSERT INTO wgusers VALUES(#{uid}, #{pwd}, #{nick})
+	</insert>
+	
+	<select id="getUserById"
+		resultType="com.tjoeun.vo.WgUserVO"
+		parameterType="String">
+		SELECT uid,pwd,nick
+        FROM wgusers
+        WHERE uid=#{uid}
+	</select>
+	
+	<select id="login"
+    	resultType="String"
+    	parameterType="com.tjoeun.vo.WgUserVO">
+    	SELECT uid
+    	FROM wgusers
+    	WHERE uid=#{uid} AND pwd=#{pwd}
+	</select>
+	
+	<update id="updateUser"
+		parameterType="com.tjoeun.vo.WgUserVO">
+		UPDATE wgusers
+		SET pwd=#{pwd}, nick=#{nick}
+		WHERE uid=#{uid}
+	</update>
+	
+	<delete id="deleteUser" parameterType="String">
+		DELETE FROM wgusers WHERE uid=#{uid}
+	</delete>
+	
+	<select id="performanceList"
+		resultType="map">
+		SELECT * FROM wgperformance p LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		ORDER BY p.startdate DESC
+	</select>
+	
+	<select id="performDetail"
+		resultType="map"
+		parameterType="Integer">
+		SELECT * FROM wgperformance p LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num LEFT OUTER JOIN wglocation l 
+        ON p.loc=l.location OR p.loc=l.gu_location
+	  	WHERE p.num=#{num}
+	</select>
+	
+	<select id="searchPerform"
+		resultType="map"
+		parameterType="String">
+		SELECT * FROM wgperformance p LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num 
+		WHERE name LIKE CONCAT('%',#{keyword},'%') OR loc LIKE CONCAT('%',#{keyword},'%') OR cast LIKE CONCAT('%',#{keyword},'%')
+		ORDER BY p.startdate DESC
+	</select>
+	
+	<select id="getTotal"
+		resultType="int">
+		SELECT COUNT(*) FROM wgperformance p LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE name LIKE CONCAT('%',#{keyword},'%') OR loc LIKE CONCAT('%',#{keyword},'%') OR cast LIKE CONCAT('%',#{keyword},'%')
+	</select>
+	
+	<insert id="addPerform"
+		parameterType="com.tjoeun.vo.WgPerformVO"
+		useGeneratedKeys="true" keyProperty="num">
+		INSERT INTO wgperformance VALUES(null, #{name}, #{startdate}, #{enddate}, #{loc}, #{genre}, #{run}, #{cast}, #{synop})
+	</insert>
+	
+	<insert id="addImage"
+		parameterType="com.tjoeun.vo.WgImageVO"
+		useGeneratedKeys="true" keyProperty="img_num">
+		INSERT INTO wgperformimage VALUES(null, #{perform_num}, #{imagepath})
+	</insert>
+	
+	<update id="updatePerform" 
+       parameterType="com.tjoeun.vo.WgPerformVO">
+       UPDATE wgperformance 
+       SET name=#{name}, startdate=#{startdate}, enddate=#{enddate}, loc=#{loc}, genre=#{genre}, run=#{run}, cast=#{cast}, synop=#{synop} 
+       WHERE num=#{num}
+    </update>
+    
+    <update id="updateImage"
+    	parameterType="com.tjoeun.vo.WgImageVO">
+    	UPDATE wgperformimage
+    	SET imagepath=#{imagepath}
+    	WHERE perform_num=#{num}
+    </update>
+	
+	<select id="getFilename"
+		parameterType="Integer"
+		resultType="String">
+		SELECT imagepath
+		FROM wgperformimage
+		WHERE img_num=#{num}
+	</select>
+	
+	<delete id="deletePerfrom" parameterType="Integer">
+       DELETE FROM wgperformance WHERE num=#{num}
+	</delete>
+	
+	<delete id="deleteImage" parameterType="Integer">
+    	DELETE FROM wgperformimage WHERE img_num=#{num}
+    </delete>
+	
+	<select id="getEndPerform"
+		resultType="map">
+		SELECT * FROM endperformance
+	</select>
+	
+	<insert id="addEndPerform"
+		parameterType="com.tjoeun.vo.WgEndPerformVO"
+		useGeneratedKeys="true" keyProperty="ep_num">
+		INSERT INTO endperformance VALUES(null, #{ep_uid}, #{ep_pernum}, #{ep_seat}, #{ep_date}, #{ep_time}, #{ep_rating}, #{ep_cast}, #{ep_review})
+	</insert>
+	
+	<select id="endperformByUid"
+		resultType="map"
+		parameterType="String">
+		SELECT * FROM endperformance e LEFT OUTER JOIN wgperformance p
+		ON e.ep_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE e.ep_uid=#{uid}
+		ORDER BY ep_date DESC
+	</select>
+	
+	<select id="endperformDetail"
+		resultType="map">
+		SELECT * FROM endperformance e LEFT OUTER JOIN wgperformance p
+		ON e.ep_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE e.ep_uid=#{uid} AND e.ep_num=#{num}
+	</select>
+	
+	<update id="updateEndPerform" parameterType="com.tjoeun.vo.WgEndPerformVO">
+		UPDATE endperformance
+		SET ep_date=#{ep_date}, ep_seat=#{ep_seat}, ep_time=#{ep_time}, ep_rating=#{ep_rating}, ep_cast=#{ep_cast}, ep_review=#{ep_review}
+		WHERE ep_num=#{ep_num}
+	</update>
+	
+	<delete id="deleteEndPerform" parameterType="Integer">
+		DELETE FROM endperformance WHERE ep_num=#{num}
+	</delete>
+	
+	<insert id="addWillPerform"
+		parameterType="com.tjoeun.vo.WgWillPerformVO"
+		useGeneratedKeys="true" keyProperty="wp_num">
+		INSERT INTO willperformance VALUES(null, #{wp_uid}, #{wp_pernum}, #{wp_date}, #{wp_time}, #{wp_seat})
+	</insert>
+	
+	<select id="willperformByUid"
+		resultType="map"
+		parameterType="String">
+		SELECT * FROM willperformance w LEFT OUTER JOIN wgperformance p
+		ON w.wp_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE w.wp_uid=#{uid}
+		ORDER BY wp_date DESC
+	</select>
+	
+	<select id="willperformDetail"
+		resultType="map">
+		SELECT * FROM willperformance w LEFT OUTER JOIN wgperformance p
+		ON w.wp_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE w.wp_uid=#{uid} AND w.wp_num=#{num}
+	</select>
+	
+	
+	<update id="updateWillPerform" parameterType="com.tjoeun.vo.WgWillPerformVO">
+		UPDATE willperformance
+		SET wp_date=#{wp_date}, wp_seat=#{wp_seat}, wp_time=#{wp_time}
+		WHERE wp_num=#{wp_num}
+	</update>
+	
+	<delete id="deleteWillPerform" parameterType="Integer">
+		DELETE FROM willperformance WHERE wp_num=#{num}
+	</delete>
+	
+	
+	<insert id="addHopePerform"
+		parameterType="com.tjoeun.vo.WgHopePerformVO"
+		useGeneratedKeys="true" keyProperty="hp_num">
+		INSERT INTO hopeperformance VALUES(null, #{hp_uid}, #{hp_pernum}, #{hp_rating}, #{hp_review})
+	</insert>
+	
+	<select id="hopeperformByUid"
+		resultType="map"
+		parameterType="String">
+		SELECT * FROM hopeperformance h LEFT OUTER JOIN wgperformance p
+		ON h.hp_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE h.hp_uid=#{uid}
+	</select>
+	
+	<select id="hopeperformDetail"
+		resultType="map">
+		SELECT * FROM hopeperformance h LEFT OUTER JOIN wgperformance p
+		ON h.hp_pernum=p.num
+		LEFT OUTER JOIN wgperformimage i
+		ON p.num=i.perform_num
+		WHERE h.hp_uid=#{uid} AND h.hp_num=#{num}
+	</select>
+	
+	<update id="updateHopePerform" parameterType="com.tjoeun.vo.WgHopePerformVO">
+		UPDATE hopeperformance 
+		SET hp_rating=#{hp_rating}, hp_review=#{hp_review}
+		WHERE hp_num=#{hp_num}
+	</update>
+	
+	<delete id="deleteHopePerform" parameterType="Integer">
+		DELETE FROM hopeperformance WHERE hp_num=#{num}
+	</delete>
+	
+	<select id="countPerformByUid"
+		resultType="Integer"
+		parameterType="String">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid}
+	</select>
+	
+	<select id="countLocByUid"
+		resultType="Integer"
+		parameterType="String">
+		SELECT  COUNT(DISTINCT loc) FROM endperformance e LEFT OUTER JOIN wgperformance p
+		ON e.ep_pernum=p.num
+		WHERE e.ep_uid=#{uid}
+	</select>
+	
+	<select id="countGroupByUid"
+		resultType="map">
+		SELECT * FROM (
+		SELECT date_format(aa.temp_date, '%Y-%m') date, COUNT(ep_num) as cnt
+		FROM temp_date aa
+		LEFT JOIN  endperformance e on (e.ep_date = aa.temp_date) and ep_uid=#{uid}
+    		group by 
+            	date ) a
+        WHERE date like concat ('%' , #{year}, '%')
+	</select>
+	
+	<select id="countGroupByUid1"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='01' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid2"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='02' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid3"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='03' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid4"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='04' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid5"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='05' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid6"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='06' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid7"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='07' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid8"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='08' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid9"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='09' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid10"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='10' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid11"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='11' AND YEAR(ep_date)=#{year};
+	</select>
+	
+	<select id="countGroupByUid12"
+		resultType="Integer">
+		SELECT COUNT(*) FROM endperformance WHERE ep_uid=#{uid} AND MONTH(ep_date)='12' AND YEAR(ep_date)=#{year};
+	</select>
+	
+</mapper>
